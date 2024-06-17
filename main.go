@@ -6,6 +6,7 @@ import (
 	"time"
 
 	conn "modulo/db/conn"
+	model "modulo/db/model"
 
 	_ "github.com/lib/pq"
 
@@ -22,6 +23,12 @@ func main() {
 		log.Fatalf("Falha ao conectar ao Postgre: %v", err)
 	}
 	defer db.Close()
+
+	// Cria a tabela no banco de dados
+	err = model.CriarTabela(db)
+	if err != nil {
+		log.Fatalf("Erro ao criar a tabela: %v", err)
+	}
 
 	arquivo.ArquivoLido()
 

@@ -5,5 +5,5 @@ import (
 )
 
 func ArquivoLido() {
-	arquivo.LeituraArquivo()
+	arquivo.LeituraPrimeiraLinha()
 }
