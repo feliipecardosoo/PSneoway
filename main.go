@@ -8,6 +8,8 @@ import (
 	conn "modulo/db/conn"
 
 	_ "github.com/lib/pq"
+
+	arquivo "modulo/src"
 )
 
 func main() {
@@ -20,6 +22,8 @@ func main() {
 		log.Fatalf("Falha ao conectar ao Postgre: %v", err)
 	}
 	defer db.Close()
+
+	arquivo.ArquivoLido()
 
 	var tempoFinal time.Time = time.Now()
 
