@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root       # Substitua 'my_postgres_user' pelo usuário desejado
+      POSTGRES_PASSWORD: 3103 # Substitua 'my_secure_password' pela senha desejada
+      POSTGRES_DB: neoway              # Substitua 'my_database' pelo nome do banco de dados desejado
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  meu-servico:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db          # Mantenha 'db' para se referir ao serviço do PostgreSQL
+      DB_PORT: 5432        # A porta padrão do PostgreSQL é 5432
+      DB_USER: root       # Substitua 'my_postgres_user' pelo mesmo usuário definido acima
+      DB_PASSWORD: 3103 # Substitua 'my_secure_password' pela mesma senha definida acima
+      DB_NAME: neoway            # Substitua 'my_database' pelo mesmo nome de banco de dados definido acima
+
+volumes:
+  db-data:
+    # Pode adicionar configurações de persistência aqui, se necessário
