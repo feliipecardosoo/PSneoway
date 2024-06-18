@@ -10,15 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Credenciais armazena as informações de conexão com o banco de dados
-type Credenciais struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-}
-
 // NovaCredencial inicializa um novo struct Credentials a partir das variáveis de ambiente
 func NovaCredencial() *Credenciais {
 	return &Credenciais{

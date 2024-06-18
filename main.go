@@ -7,34 +7,34 @@ import (
 
 	conn "modulo/db/conn"
 	model "modulo/db/model"
-
-	_ "github.com/lib/pq"
-
-	arquivo "modulo/src"
+	arquivo "modulo/src/arquivo"
 )
 
 func main() {
-	// Inicia o cronometro
+	// Inicia o cronômetro
 	var inicioTempo time.Time = time.Now()
 
-	// Chama a conexao com o banco de dados
+	// Conectar ao banco de dados PostgreSQL
 	db, err := conn.IniciarConexao()
 	if err != nil {
-		log.Fatalf("Falha ao conectar ao Postgre: %v", err)
+		log.Fatalf("Falha ao conectar ao PostgreSQL: %v", err)
 	}
 	defer db.Close()
 
-	// Cria a tabela no banco de dados
+	// Criar a tabela 'pessoas' se não existir
 	err = model.CriarTabela(db)
 	if err != nil {
-		log.Fatalf("Erro ao criar a tabela: %v", err)
+		log.Fatalf("Erro ao criar a tabela pessoas: %v", err)
 	}
 
-	arquivo.ArquivoLido()
+	// Ler dados do arquivo e inserir no banco de dados
+	err = arquivo.LeituraDados(db)
+	if err != nil {
+		log.Fatalf("Erro ao ler dados do arquivo e inserir no banco de dados: %v", err)
+	}
 
+	// Medir tempo total de execução
 	var tempoFinal time.Time = time.Now()
-
 	var tempoTotal time.Duration = tempoFinal.Sub(inicioTempo)
-
-	fmt.Println("Tempo total da insercao: ", tempoTotal)
+	fmt.Println("Tempo total da inserção:", tempoTotal)
 }
