@@ -25,33 +25,33 @@ func LeituraDados(db *sql.DB) error {
 	// Criando um scanner para ler arquivo.
 	scanner := bufio.NewScanner(file)
 
-	// Criando um buffer capacidade 64kb
-	buf := make([]byte, 0, 64*1024)
+	// Enviar blocos para processamento
+	// Escolhi 20 blocos pois a minha leitura do arquivo esta rapida e o meu processamento esta mais lento.
+	blocoCh := make(chan []string, 20)
 
-	// Definindo buffer interno do scanner para 1mb
-	scanner.Buffer(buf, 1024*1024)
-
-	if scanner.Scan() {
-		_ = scanner.Text()
-	}
-
-	blocoCh := make(chan []string, 10)
-
+	// Goroutine para ler o arquivo
 	go func() {
 		defer close(blocoCh)
 
 		var bloco []string
+
+		// Loop que percorre cada linha do arquivo usando o scanner
 		for scanner.Scan() {
 			linha := scanner.Text()
 			bloco = append(bloco, linha)
 
+			// Se o bloco atingir o tamanho máximo definido por maxLinhasPorBloco
 			if len(bloco) >= maxLinhasPorBloco {
+				// Envia o bloco completo para o canal blocoCh
 				blocoCh <- bloco
+				// Reseta o bloco para iniciar um novo
 				bloco = nil
 			}
 		}
 
+		// Após a leitura de todas as linhas, se ainda houver linhas no bloco
 		if len(bloco) > 0 {
+			// Envia o bloco restante para o canal blocoCh
 			blocoCh <- bloco
 		}
 	}()

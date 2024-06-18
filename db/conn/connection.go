@@ -28,22 +28,22 @@ func NovaConexao(creds *Credenciais) (*sql.DB, error) {
 
 	var db *sql.DB
 	var err error
-	maxAttempts := 10
-	attempt := 0
+	maximaTentativa := 10
+	tentativa := 0
 
 	// Loop para tentar conectar ao PostgreSQL várias vezes
-	for attempt < maxAttempts {
+	for tentativa < maximaTentativa {
 		db, err = sql.Open("postgres", connStr)
 		if err == nil {
 			break
 		}
-		log.Printf("Erro ao conectar ao PostgreSQL (tentativa %d de %d): %v", attempt+1, maxAttempts, err)
-		attempt++
+		log.Printf("Erro ao conectar ao PostgreSQL (tentativa %d de %d): %v", tentativa+1, maximaTentativa, err)
+		tentativa++
 		time.Sleep(5 * time.Second) // Espera 5 segundos antes de tentar novamente
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("falha ao conectar ao PostgreSQL após %d tentativas: %v", maxAttempts, err)
+		return nil, fmt.Errorf("falha ao conectar ao PostgreSQL após %d tentativas: %v", maximaTentativa, err)
 	}
 
 	// Verificar a conexão
