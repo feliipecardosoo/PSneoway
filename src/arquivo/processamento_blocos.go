@@ -1,5 +1,3 @@
-// Arquivo processamento_blocos.go
-
 package arquivo
 
 import (
