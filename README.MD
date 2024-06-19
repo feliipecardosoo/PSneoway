@@ -75,14 +75,13 @@ func ProcessarBlocos(db *sql.DB, blocoCh <-chan []string) {
 **Função executarProcessamentoDeBloco:**
 É responsável por processar cada bloco de linhas recebido pela função ProcessarBlocos. Ela realiza as seguintes operações:
 
-- **Inicia uma transação no banco de dados para garantir a atomicidade das operações.**
+- Inicia uma transação no banco de dados para garantir a atomicidade das operações.
 
-- **Para cada linha no bloco, realiza as validações necessárias nos dados (CPF, CNPJ) antes de prepará-los para inserção.**
+- Para cada linha no bloco, realiza as validações necessárias nos dados (CPF, CNPJ) antes de prepará-los para inserção.
 
-- **Prepara os valores a serem inseridos no banco de dados, formatando-os como strings e definindo os argumentos correspondentes.**
+- Prepara os valores a serem inseridos no banco de dados, formatando-os como strings e definindo os argumentos correspondentes.
 
-- **Utiliza a função InsertBloco para inserir os dados na transação atual.**
-
+- Utiliza a função InsertBloco para inserir os dados na transação atual.
 
 ```bash
 // executarProcessamentoDeBloco é responsável pelo processamento de um bloco lido
