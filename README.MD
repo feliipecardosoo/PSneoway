@@ -86,6 +86,7 @@ func ProcessarBlocos(db *sql.DB, blocoCh <-chan []string) {
 ```bash
 // executarProcessamentoDeBloco é responsável pelo processamento de um bloco lido
 func executarProcessamentoDeBloco(db *sql.DB, bloco []string) {
+	// Inicio da transacao
 	tx, err := db.Begin()
 	if err != nil {
 		log.Printf("Erro ao iniciar transação para bloco: %v\n", err)
@@ -104,32 +105,93 @@ func executarProcessamentoDeBloco(db *sql.DB, bloco []string) {
 		}
 	}()
 
+	// Valores de cada linha
 	valueStrings := make([]string, 0, len(bloco))
+	// Valores de cada coluna
 	valueArgs := make([]interface{}, 0, len(bloco)*8)
 
 	for _, linha := range bloco {
-		// ... validações e preparação dos dados ...
+		// Estou trocando todas as , por .
+		// Motivo: Coluna Ticket Médio e Ticket da ultima compra
+		linha = strings.ReplaceAll(linha, ",", ".")
 
-		// Adiciona os valores formatados ao slice de valueStrings e valueArgs
-		valueStrings = append(valueStrings, "(?, ?, ?, ?, ?, ?, ?, ?)")
-		valueArgs = append(valueArgs,
+		// Divide a linha em campos, separa por vírgula ou espaço
+		campos := strings.FieldsFunc(linha, func(r rune) bool {
+			return r == ',' || r == ' '
+		})
+
+		// Se a linha tiver menos que 8 campos é inválida
+		if len(campos) < 8 {
+			log.Printf("Linha inválida: %s\n", linha)
+			continue
+		}
+
+		// Faz a remoção da pontuação do CPF + Validação
+		cpfSemPontuacao := removerPontuacao(campos[0])
+		if !validarCPF(cpfSemPontuacao) {
+			log.Printf("CPF inválido: %s\n", campos[0])
+			continue
+		}
+
+		// Faz a remoção da pontuação do CNPJ + Validação
+		cnpjMaisFrequenteSemPontuacao := removerPontuacao(campos[6])
+		cnpjUltimaCompraSemPontuacao := removerPontuacao(campos[7])
+		if !validarCNPJ(cnpjMaisFrequenteSemPontuacao) || !validarCNPJ(cnpjUltimaCompraSemPontuacao) {
+			log.Printf("CNPJ inválido: %s ou %s\n", campos[6], campos[7])
+			continue
+		}
+
+		// Conversão e validação de campos float, substituindo por NULL se inválidos
+		var camposFloat4, camposFloat5 string
+		if campos[4] == "" {
+			camposFloat4 = "NULL"
+		} else {
+			val, err := strconv.ParseFloat(campos[4], 8)
+			if err != nil {
+				camposFloat4 = "NULL"
+			} else {
+				camposFloat4 = fmt.Sprintf("%f", val)
+			}
+		}
+
+		if campos[5] == "" {
+			camposFloat5 = "NULL"
+		} else {
+			val, err := strconv.ParseFloat(campos[5], 8)
+			if err != nil {
+				camposFloat5 = "NULL"
+			} else {
+				camposFloat5 = fmt.Sprintf("%f", val)
+			}
+		}
+
+		// Substituição de campos vazios por NULL
+		nome := campos[3]
+		if nome == "" {
+			nome = "NULL"
+		} else {
+			nome = fmt.Sprintf("'%s'", nome)
+		}
+
+		// Tratamento do campo de data, substituindo por NULL se inválido ou vazio
+		dataUltimaCompra := campos[3]
+		if dataUltimaCompra == "" || dataUltimaCompra == "NULL" {
+			dataUltimaCompra = "NULL"
+		} else {
+			dataUltimaCompra = fmt.Sprintf("'%s'", dataUltimaCompra)
+		}
+
+		// Se passar por todas as validações, os dados são adicionados à string valueStrings
+		valueStrings = append(valueStrings, fmt.Sprintf("('%s', %t, %t, %s, %s, %s, '%s', '%s')",
 			cpfSemPontuacao,
 			campos[1] == "1",
 			campos[2] == "1",
-			converterStringNula(campos[3]),
-			converterFloatNulo(campos[4]),
-			converterFloatNulo(campos[5]),
+			dataUltimaCompra,
+			camposFloat4,
+			camposFloat5,
 			cnpjMaisFrequenteSemPontuacao,
-			cnpjUltimaCompraSemPontuacao,
-		)
+			cnpjUltimaCompraSemPontuacao))
 	}
-
-	// Insere os dados no banco de dados usando a transação atual (tx)
-	err = InsertBloco(tx, valueStrings, valueArgs)
-	if err != nil {
-		return
-	}
-}
 ```
 ##
 **Observações:**
@@ -145,8 +207,8 @@ func executarProcessamentoDeBloco(db *sql.DB, bloco []string) {
 ```bash
 CREATE TABLE pessoas (
 		cpf VARCHAR(20) PRIMARY KEY,
-		private BOOLEAN NOT NULL,
-		incompleto BOOLEAN NOT NULL,
+		private BOOLEAN,
+		incompleto BOOLEAN,
 		data_ultima_compra DATE,
 		ticket_medio DECIMAL(10,2),
 		ticket_ultima_compra DECIMAL(10,2),
