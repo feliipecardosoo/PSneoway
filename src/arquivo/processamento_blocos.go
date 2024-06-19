@@ -13,7 +13,7 @@ const maxLinhasPorBloco = 1500
 
 // ProcessarBlocos executa o processamento de blocos de linhas e os insere no banco de dados
 func ProcessarBlocos(db *sql.DB, blocoCh <-chan []string) {
-	// Cria um WaitGroup para aguardar a conclusão de todas as goroutines
+	// Cria um WaitGroup para aguardar a conclusão de todas as goroutines 34
 	var wg sync.WaitGroup
 
 	// Iteracao sobre cada bloco de linhas recebido

@@ -26,8 +26,8 @@ func LeituraDados(db *sql.DB) error {
 	scanner := bufio.NewScanner(file)
 
 	// Enviar blocos para processamento
-	// Escolhi 20 blocos pois a minha leitura do arquivo esta rapida e o meu processamento esta mais lento.
-	blocoCh := make(chan []string, 20)
+	// Escolhi 34 blocos pois o meu goroutine nao precisa esperar nenhum outro bloco ficar pronto, melhorando a performance do codigo
+	blocoCh := make(chan []string, 34)
 
 	// Goroutine para ler o arquivo
 	go func() {
