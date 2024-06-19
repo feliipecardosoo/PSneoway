@@ -1,9 +1,6 @@
 package arquivo
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -73,29 +70,29 @@ func validarCNPJ(cnpj string) bool {
 
 // converterStringNula se a String for "NULL", retorna um sql.NullString, caso contrario, vai cair no segundo return, aonde contem a String de entrada e o Valid é definido como true
 // vou usar isso no campo de Date.
-func converterStringNula(s string) sql.NullString {
-	if s == "NULL" {
-		return sql.NullString{}
-	}
-	return sql.NullString{
-		String: s,
-		Valid:  true,
-	}
-}
+// func converterStringNula(s string) sql.NullString {
+// 	if s == "NULL" {
+// 		return sql.NullString{}
+// 	}
+// 	return sql.NullString{
+// 		String: s,
+// 		Valid:  true,
+// 	}
+// }
 
 // converterFloatNulo se a String de entrada for diferente de "NULL", tenta converter a string para float64
 // vou usar isso no campo de tickets
-func converterFloatNulo(s string) sql.NullFloat64 {
-	var nf sql.NullFloat64
-	if s != "NULL" {
-		var f float64
-		_, err := fmt.Sscanf(s, "%f", &f)
-		if err != nil {
-			log.Printf("Erro ao converter para NullFloat64: %v\n", err)
-			return nf
-		}
-		nf.Float64 = f
-		nf.Valid = true
-	}
-	return nf
-}
+// func converterFloatNulo(s string) sql.NullFloat64 {
+// 	var nf sql.NullFloat64
+// 	if s != "NULL" {
+// 		var f float64
+// 		_, err := fmt.Sscanf(s, "%f", &f)
+// 		if err != nil {
+// 			log.Printf("Erro ao converter para NullFloat64: %v\n", err)
+// 			return nf
+// 		}
+// 		nf.Float64 = f
+// 		nf.Valid = true
+// 	}
+// 	return nf
+// }

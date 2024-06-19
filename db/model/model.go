@@ -19,8 +19,8 @@ func CriarTabela(db *sql.DB) error {
 	criarTabelaQuery := `
 	CREATE TABLE pessoas (
 		cpf VARCHAR(20) PRIMARY KEY,
-		private BOOLEAN NOT NULL,
-		incompleto BOOLEAN NOT NULL,
+		private BOOLEAN,
+		incompleto BOOLEAN,
 		data_ultima_compra DATE,
 		ticket_medio DECIMAL(10,2),
 		ticket_ultima_compra DECIMAL(10,2),

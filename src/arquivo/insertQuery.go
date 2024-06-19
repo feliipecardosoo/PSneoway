@@ -14,7 +14,7 @@ func InsertBloco(tx *sql.Tx, valueStrings []string, valueArgs []interface{}) err
 		strings.Join(valueStrings, ","))
 
 	// Executando a query
-	_, err := tx.Exec(stmt, valueArgs...)
+	_, err := tx.Exec(stmt)
 	if err != nil {
 		log.Printf("Erro ao inserir bloco: %v\n", err)
 		return err

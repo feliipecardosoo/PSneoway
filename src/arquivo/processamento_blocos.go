@@ -2,7 +2,9 @@ package arquivo
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -64,25 +66,25 @@ func executarProcessamentoDeBloco(db *sql.DB, bloco []string) {
 		// Motivo: Coluna Ticket Médio e Ticket da ultima compra
 		linha = strings.ReplaceAll(linha, ",", ".")
 
-		// Divide a linha em campos, separa por virgula ou espaço
+		// Divide a linha em campos, separa por vírgula ou espaço
 		campos := strings.FieldsFunc(linha, func(r rune) bool {
 			return r == ',' || r == ' '
 		})
 
-		// Se a linha for menos que 8 campos é invalida
+		// Se a linha tiver menos que 8 campos é inválida
 		if len(campos) < 8 {
 			log.Printf("Linha inválida: %s\n", linha)
 			continue
 		}
 
-		// Faz a remocao da pontuacao do CPF + Validacao
+		// Faz a remoção da pontuação do CPF + Validação
 		cpfSemPontuacao := removerPontuacao(campos[0])
 		if !validarCPF(cpfSemPontuacao) {
 			log.Printf("CPF inválido: %s\n", campos[0])
 			continue
 		}
 
-		// Faz a remocao da pontuacao do CNPJ + Validacao
+		// Faz a remoção da pontuação do CNPJ + Validação
 		cnpjMaisFrequenteSemPontuacao := removerPontuacao(campos[6])
 		cnpjUltimaCompraSemPontuacao := removerPontuacao(campos[7])
 		if !validarCNPJ(cnpjMaisFrequenteSemPontuacao) || !validarCNPJ(cnpjUltimaCompraSemPontuacao) {
@@ -90,18 +92,56 @@ func executarProcessamentoDeBloco(db *sql.DB, bloco []string) {
 			continue
 		}
 
-		// Se passar por todas as validacoes os dados sao adicoinados a minha string Value Strings
-		valueStrings = append(valueStrings, "(?, ?, ?, ?, ?, ?, ?, ?)")
-		valueArgs = append(valueArgs,
+		// Conversão e validação de campos float, substituindo por NULL se inválidos
+		var camposFloat4, camposFloat5 string
+		if campos[4] == "" {
+			camposFloat4 = "NULL"
+		} else {
+			val, err := strconv.ParseFloat(campos[4], 8)
+			if err != nil {
+				camposFloat4 = "NULL"
+			} else {
+				camposFloat4 = fmt.Sprintf("%f", val)
+			}
+		}
+
+		if campos[5] == "" {
+			camposFloat5 = "NULL"
+		} else {
+			val, err := strconv.ParseFloat(campos[5], 8)
+			if err != nil {
+				camposFloat5 = "NULL"
+			} else {
+				camposFloat5 = fmt.Sprintf("%f", val)
+			}
+		}
+
+		// Substituição de campos vazios por NULL
+		nome := campos[3]
+		if nome == "" {
+			nome = "NULL"
+		} else {
+			nome = fmt.Sprintf("'%s'", nome)
+		}
+
+		// Tratamento do campo de data, substituindo por NULL se inválido ou vazio
+		dataUltimaCompra := campos[3]
+		if dataUltimaCompra == "" || dataUltimaCompra == "NULL" {
+			dataUltimaCompra = "NULL"
+		} else {
+			dataUltimaCompra = fmt.Sprintf("'%s'", dataUltimaCompra)
+		}
+
+		// Se passar por todas as validações, os dados são adicionados à string valueStrings
+		valueStrings = append(valueStrings, fmt.Sprintf("('%s', %t, %t, %s, %s, %s, '%s', '%s')",
 			cpfSemPontuacao,
 			campos[1] == "1",
 			campos[2] == "1",
-			converterStringNula(campos[3]),
-			converterFloatNulo(campos[4]),
-			converterFloatNulo(campos[5]),
+			dataUltimaCompra,
+			camposFloat4,
+			camposFloat5,
 			cnpjMaisFrequenteSemPontuacao,
-			cnpjUltimaCompraSemPontuacao,
-		)
+			cnpjUltimaCompraSemPontuacao))
 	}
 
 	// Chama a função InsertBloco para inserir os dados no banco

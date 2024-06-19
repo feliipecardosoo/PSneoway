@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "DEBUG",
+        "type": "go",
+        "request": "launch",
+        "mode": "auto",
+        "program": "${workspaceFolder}",
+        "debugAdapter": "dlv-dap",
+        "env": {
+            "DB_HOST": "172.18.0.2", 
+            "DB_PORT": "5432",       
+           "DB_USER": "root" ,   
+            "DB_PASSWORD": "3103",
+            "DB_NAME": "neoway",         
+        },
+        "args": []
+      }
+    ]
+  }
+  
